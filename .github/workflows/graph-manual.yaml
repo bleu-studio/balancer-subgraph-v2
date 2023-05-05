@@ -37,6 +37,6 @@ jobs:
       - uses: balancer-labs/graph-deploy@v0.0.1
         with:
           graph_access_token: ${{ secrets.GRAPH_ACCESS_TOKEN }}
-          graph_subgraph_name: "balancer-${{ inputs.network }}-v2-full"
-          graph_account: "balancer-labs"
+          graph_subgraph_name: "balancer-${{ inputs.network }}-v2"
+          graph_account: "bleu-studio"
           graph_config_file: "subgraph.${{ inputs.network }}.full.yaml"
