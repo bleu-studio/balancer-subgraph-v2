@@ -217,6 +217,7 @@ type Swap @entity(immutable: true) {
   tokenAmountIn: BigDecimal!
   tokenAmountOut: BigDecimal!
   valueUSD: BigDecimal!
+  swapFeesUSD: BigDecimal!
   poolId: Pool!
   userAddress: User!
   timestamp: Int!
@@ -233,7 +234,9 @@ type JoinExit @entity(immutable: true) {
   type: InvestType!
   sender: Bytes!
   amounts: [BigDecimal!]!
+  protocolFeeAmounts: [BigDecimal!]!
   valueUSD: BigDecimal
+  protocolFeeUSD: BigDecimal
   pool: Pool!
   user: User!
   timestamp: Int!

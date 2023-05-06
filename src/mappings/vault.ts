@@ -137,7 +137,9 @@ function handlePoolJoined(event: PoolBalanceChanged): void {
   let join = new JoinExit(joinId);
   join.sender = event.params.liquidityProvider;
   let joinAmounts = new Array<BigDecimal>(amounts.length);
+  let scaledDownProtocolFeeAmounts = new Array<BigDecimal>(amounts.length);
   let valueUSD = ZERO_BD;
+  let protocolFeeUSD = ZERO_BD;
   for (let i: i32 = 0; i < tokenAddresses.length; i++) {
     let tokenAddress: Address = Address.fromString(tokenAddresses[i].toHexString());
     let poolToken = loadPoolToken(poolId, tokenAddress);
@@ -148,14 +150,20 @@ function handlePoolJoined(event: PoolBalanceChanged): void {
     joinAmounts[i] = joinAmount;
     let tokenJoinAmountInUSD = valueInUSD(joinAmount, tokenAddress);
     valueUSD = valueUSD.plus(tokenJoinAmountInUSD);
+    let protocolFeeAmount = tokenToDecimal(protocolFeeAmounts[i], poolToken.decimals);
+    scaledDownProtocolFeeAmounts[i] = protocolFeeAmount;
+    let protocolFeeAmountInUSD = valueInUSD(protocolFeeAmount, tokenAddress);
+    protocolFeeUSD = protocolFeeUSD.plus(protocolFeeAmountInUSD);
   }
   join.type = 'Join';
   join.amounts = joinAmounts;
+  join.protocolFeeAmounts = scaledDownProtocolFeeAmounts;
   join.pool = event.params.poolId.toHexString();
   join.user = event.params.liquidityProvider.toHexString();
   join.timestamp = blockTimestamp;
   join.tx = transactionHash;
   join.valueUSD = valueUSD;
+  join.protocolFeeUSD = protocolFeeUSD;
   join.save();
 
   for (let i: i32 = 0; i < tokenAddresses.length; i++) {
@@ -238,7 +246,9 @@ function handlePoolExited(event: PoolBalanceChanged): void {
   let exit = new JoinExit(exitId);
   exit.sender = event.params.liquidityProvider;
   let exitAmounts = new Array<BigDecimal>(amounts.length);
+  let scaledDownProtocolFeeAmounts = new Array<BigDecimal>(amounts.length);
   let valueUSD = ZERO_BD;
+  let protocolFeeUSD = ZERO_BD;
   for (let i: i32 = 0; i < tokenAddresses.length; i++) {
     let tokenAddress: Address = Address.fromString(tokenAddresses[i].toHexString());
     let poolToken = loadPoolToken(poolId, tokenAddress);
@@ -249,14 +259,22 @@ function handlePoolExited(event: PoolBalanceChanged): void {
     exitAmounts[i] = exitAmount;
     let tokenExitAmountInUSD = valueInUSD(exitAmount, tokenAddress);
     valueUSD = valueUSD.plus(tokenExitAmountInUSD);
+    let protocolFeeAmount = tokenToDecimal(protocolFeeAmounts[i], poolToken.decimals);
+    let protocolFeeAmountInUSD = valueInUSD(protocolFeeAmount, tokenAddress);
+    scaledDownProtocolFeeAmounts[i] = protocolFeeAmount;
+
+    protocolFeeUSD = protocolFeeUSD.plus(protocolFeeAmountInUSD);
+
   }
   exit.type = 'Exit';
   exit.amounts = exitAmounts;
+  exit.protocolFeeAmounts = scaledDownProtocolFeeAmounts;
   exit.pool = event.params.poolId.toHexString();
   exit.user = event.params.liquidityProvider.toHexString();
   exit.timestamp = blockTimestamp;
   exit.tx = transactionHash;
   exit.valueUSD = valueUSD;
+  exit.protocolFeeUSD = protocolFeeUSD;
   exit.save();
 
   for (let i: i32 = 0; i < tokenAddresses.length; i++) {
@@ -504,6 +522,7 @@ export function handleSwapEvent(event: SwapEvent): void {
   swap.tokenAmountOut = tokenAmountOut;
 
   swap.valueUSD = valueUSD;
+  swap.swapFeesUSD = swapFeesUSD;
 
   swap.caller = event.transaction.from;
   swap.userAddress = event.transaction.from.toHex();
