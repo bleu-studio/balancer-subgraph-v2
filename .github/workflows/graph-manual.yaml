@@ -12,6 +12,9 @@ on:
           - mainnet
           - arbitrum
           - polygon
+          - gnosis
+          - optimism
+          - avalanche
           - goerli
 
 jobs:
